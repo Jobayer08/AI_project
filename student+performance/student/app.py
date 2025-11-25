@@ -2,48 +2,116 @@ import joblib
 import pandas as pd
 import streamlit as st
 
+# ---- Load trained model ----
 model = joblib.load("student_performance_model.joblib")
 
 st.title("Student Performance Prediction App")
-
-st.write("Nicher information diye predict korbo je student final exam e pass korbe naki fail.")
-
-
-sex = st.selectbox("Sex", ["M", "F"])
-age = st.slider("Age", 15, 22, 17)
-studytime = st.selectbox(
-    "Weekly study time (code)",
-    [1, 2, 3, 4],
-    format_func=lambda x: {
-        1: "<2 hours",
-        2: "2–5 hours",
-        3: "5–10 hours",
-        4: ">10 hours"
-    }[x]
+st.write(
+    "Nicher information diye predict korbo je student final exam e pass korbe naki fail."
 )
-failures = st.slider("Past class failures", 0, 3, 0)
-absences = st.slider("Number of absences", 0, 93, 4)
-goout = st.slider("Going out with friends (1–5)", 1, 5, 3)
-health = st.slider("Health status (1–5)", 1, 5, 3)
+
+# ---------- Categorical inputs ----------
+
+school = st.selectbox("School", ["GP", "MS"])
+sex = st.selectbox("Sex", ["M", "F"])
+address = st.selectbox("Address", ["U", "R"])  # U=urban, R=rural
+famsize = st.selectbox("Family size", ["LE3", "GT3"])
+Pstatus = st.selectbox("Parent cohabitation status", ["T", "A"])
+
+Mjob = st.selectbox(
+    "Mother's job",
+    ["teacher", "health", "services", "at_home", "other"]
+)
+Fjob = st.selectbox(
+    "Father's job",
+    ["teacher", "health", "services", "at_home", "other"]
+)
+
+reason = st.selectbox(
+    "Reason to choose school",
+    ["home", "reputation", "course", "other"]
+)
+
+guardian = st.selectbox("Guardian", ["mother", "father", "other"])
+
+schoolsup = st.selectbox("Extra educational support (schoolsup)", ["yes", "no"])
+famsup = st.selectbox("Family educational support (famsup)", ["yes", "no"])
+paid = st.selectbox("Extra paid classes (Math)", ["yes", "no"])
+activities = st.selectbox("Extra-curricular activities", ["yes", "no"])
+nursery = st.selectbox("Attended nursery school", ["yes", "no"])
+higher = st.selectbox("Wants higher education", ["yes", "no"])
+internet = st.selectbox("Internet access at home", ["yes", "no"])
+romantic = st.selectbox("In a romantic relationship", ["yes", "no"])
+
+# ---------- Numeric inputs ----------
+
+age = st.slider("Age", 15, 22, 17)
+Medu = st.slider("Mother's education (0-4)", 0, 4, 2)
+Fedu = st.slider("Father's education (0-4)", 0, 4, 2)
+traveltime = st.slider("Home to school travel time (1-4)", 1, 4, 1)
+studytime = st.slider("Weekly study time (1-4)", 1, 4, 2)
+failures = st.slider("Past class failures (0-4)", 0, 4, 0)
+famrel = st.slider("Family relationship quality (1-5)", 1, 5, 4)
+freetime = st.slider("Free time after school (1-5)", 1, 5, 3)
+goout = st.slider("Going out with friends (1-5)", 1, 5, 3)
+Dalc = st.slider("Workday alcohol consumption (1-5)", 1, 5, 1)
+Walc = st.slider("Weekend alcohol consumption (1-5)", 1, 5, 2)
+health = st.slider("Current health status (1-5)", 1, 5, 3)
+absences = st.slider("Number of school absences", 0, 93, 4)
+
+# ---------- Prediction button ----------
 
 if st.button("Predict"):
-    
     data = {
-        "sex": [sex],
+        # numeric features
         "age": [age],
+        "Medu": [Medu],
+        "Fedu": [Fedu],
+        "traveltime": [traveltime],
         "studytime": [studytime],
         "failures": [failures],
-        "absences": [absences],
+        "famrel": [famrel],
+        "freetime": [freetime],
         "goout": [goout],
+        "Dalc": [Dalc],
+        "Walc": [Walc],
         "health": [health],
+        "absences": [absences],
+
+        # categorical features
+        "school": [school],
+        "sex": [sex],
+        "address": [address],
+        "famsize": [famsize],
+        "Pstatus": [Pstatus],
+        "Mjob": [Mjob],
+        "Fjob": [Fjob],
+        "reason": [reason],
+        "guardian": [guardian],
+        "schoolsup": [schoolsup],
+        "famsup": [famsup],
+        "paid": [paid],
+        "activities": [activities],
+        "nursery": [nursery],
+        "higher": [higher],
+        "internet": [internet],
+        "romantic": [romantic],
     }
 
+    # VERY IMPORTANT: columns name must match training X exactly
     input_df = pd.DataFrame(data)
 
     pred = model.predict(input_df)[0]
-    proba = model.predict_proba(input_df)[0][1]
+    proba = model.predict_proba(input_df)[0]
+
+    fail_prob = proba[0]
+    pass_prob = proba[1]
 
     if pred == 1:
-        st.success(f"Prediction: PASS (probability ≈ {proba*100:.1f}%)")
+        st.success("Final prediction: PASS")
     else:
-        st.error(f"Prediction: FAIL (probability ≈ {proba*100:.1f}%)")
+        st.error("Final prediction: FAIL")
+
+    # দুটো percentage-ই দেখাচ্ছি
+    st.write(f"Pass probability: **{pass_prob*100:.2f}%**")
+    st.write(f"Fail probability: **{fail_prob*100:.2f}%**")
