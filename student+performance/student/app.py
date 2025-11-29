@@ -2,7 +2,7 @@ import joblib
 import pandas as pd
 import streamlit as st
 
-# ---- Load trained model ----
+
 model = joblib.load("student_performance_model.joblib")
 
 st.title("Student Performance Prediction App")
@@ -10,11 +10,11 @@ st.write(
     "Nicher information diye predict korbo je student final exam e pass korbe naki fail."
 )
 
-# ---------- Categorical inputs ----------
+
 
 school = st.selectbox("School", ["GP", "MS"])
 sex = st.selectbox("Sex", ["M", "F"])
-address = st.selectbox("Address", ["U", "R"])  # U=urban, R=rural
+address = st.selectbox("Address", ["U", "R"])  
 famsize = st.selectbox("Family size", ["LE3", "GT3"])
 Pstatus = st.selectbox("Parent cohabitation status", ["T", "A"])
 
@@ -43,7 +43,7 @@ higher = st.selectbox("Wants higher education", ["yes", "no"])
 internet = st.selectbox("Internet access at home", ["yes", "no"])
 romantic = st.selectbox("In a romantic relationship", ["yes", "no"])
 
-# ---------- Numeric inputs ----------
+
 
 age = st.slider("Age", 15, 22, 17)
 Medu = st.slider("Mother's education (0-4)", 0, 4, 2)
@@ -59,11 +59,10 @@ Walc = st.slider("Weekend alcohol consumption (1-5)", 1, 5, 2)
 health = st.slider("Current health status (1-5)", 1, 5, 3)
 absences = st.slider("Number of school absences", 0, 93, 4)
 
-# ---------- Prediction button ----------
 
 if st.button("Predict"):
     data = {
-        # numeric features
+    
         "age": [age],
         "Medu": [Medu],
         "Fedu": [Fedu],
@@ -78,7 +77,7 @@ if st.button("Predict"):
         "health": [health],
         "absences": [absences],
 
-        # categorical features
+        
         "school": [school],
         "sex": [sex],
         "address": [address],
@@ -98,7 +97,7 @@ if st.button("Predict"):
         "romantic": [romantic],
     }
 
-    # VERY IMPORTANT: columns name must match training X exactly
+    
     input_df = pd.DataFrame(data)
 
     pred = model.predict(input_df)[0]
@@ -112,6 +111,6 @@ if st.button("Predict"):
     else:
         st.error("Final prediction: FAIL")
 
-    # দুটো percentage-ই দেখাচ্ছি
+    
     st.write(f"Pass probability: **{pass_prob*100:.2f}%**")
     st.write(f"Fail probability: **{fail_prob*100:.2f}%**")
